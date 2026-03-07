@@ -1,0 +1,15 @@
+<header class="nav">
+  <div class="nav__bar">
+    <a class="nav__brand" routerLink="/dashboard"><span class="brand-dot"></span>TaskFlow</a>
+    <div class="nav__spacer"></div>
+    <ng-container *ngIf="auth.isAuthenticated(); else guest">
+      <span class="nav__hello">Hello, {{ fullName }}</span>
+      <!-- <button class="nav__avatar" aria-label="profile"></button> -->
+      <button class="nav__btn" (click)="auth.logout()">Logout</button>
+    </ng-container>
+    <ng-template #guest>
+      <a class="nav__btn" routerLink="/login">Login</a>
+      <a class="nav__btn" routerLink="/register">Register</a>
+    </ng-template>
+  </div>
+</header>
