@@ -3,6 +3,7 @@ package com.example.taskflow.repository;
 import com.example.taskflow.domain.ActivityLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -24,4 +25,8 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
         order by a.createdAt desc
     """)
     List<ActivityLog> findRecentForUser(@Param("userId") Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("update ActivityLog a set a.task = null where a.task.id = :taskId")
+    int detachTask(@Param("taskId") Long taskId);
 }
