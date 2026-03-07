@@ -6,10 +6,12 @@ import com.example.taskflow.domain.User;
 import com.example.taskflow.dto.TaskSummaryResponse;
 import com.example.taskflow.exception.ForbiddenException;
 import com.example.taskflow.exception.ResourceNotFoundException;
+import com.example.taskflow.repository.ActivityLogRepository;
 import com.example.taskflow.repository.TaskRepository;
 import com.example.taskflow.service.ActivityLogService;
 import com.example.taskflow.service.TaskService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,10 +20,12 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository tasks;
     private final ActivityLogService activityLogs;
+    private final ActivityLogRepository activityLogRepo;
 
-    public TaskServiceImpl(TaskRepository tasks, ActivityLogService activityLogs) {
+    public TaskServiceImpl(TaskRepository tasks, ActivityLogService activityLogs, ActivityLogRepository activityLogRepo) {
         this.tasks = tasks;
         this.activityLogs = activityLogs;
+        this.activityLogRepo = activityLogRepo;
     }
 
     @Override
@@ -115,9 +119,15 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void delete(User owner, Long id) {
         Task existing = findByIdOrThrow(owner, id);
         String title = existing.getTitle();
+
+        // Detach activity log rows referencing this task to avoid FK violations.
+        // (We keep the rows so the feed still shows the action text.)
+        activityLogRepo.detachTask(existing.getId());
+
         tasks.delete(existing);
         activityLogs.log(null, owner, "TASK_DELETED",
                 owner.getFullName() + " deleted task \"" + title + "\"");

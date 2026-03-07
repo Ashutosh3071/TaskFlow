@@ -217,12 +217,17 @@ export class DashboardComponent implements OnInit {
   // ------- Delete -------
   confirmDelete(t: TaskResponse): void {
     if (confirm('Are you sure you want to delete this task?')) {
-      this.#tasks.remove(t.id).subscribe(() => {
-        this.tasks = this.tasks.filter(x => x.id !== t.id);
-        this.recomputeCounts();
-        this.computeAlerts();
-        this.applyFilter();
-        this.loadActivity();
+      this.#tasks.remove(t.id).subscribe({
+        next: () => {
+          this.tasks = this.tasks.filter(x => x.id !== t.id);
+          this.recomputeCounts();
+          this.computeAlerts();
+          this.applyFilter();
+          this.loadActivity();
+        },
+        error: (err) => {
+          alert(err?.error?.message ?? 'Failed to delete task.');
+        }
       });
     }
   }
@@ -231,13 +236,18 @@ export class DashboardComponent implements OnInit {
     if (!this.selected) return;
     const task = this.selected;
     if (confirm('Are you sure you want to delete this task?')) {
-      this.#tasks.remove(task.id).subscribe(() => {
-        this.tasks = this.tasks.filter(x => x.id !== task.id);
-        this.recomputeCounts();
-        this.computeAlerts();
-        this.applyFilter();
-        this.loadActivity();
-        this.closeForm();
+      this.#tasks.remove(task.id).subscribe({
+        next: () => {
+          this.tasks = this.tasks.filter(x => x.id !== task.id);
+          this.recomputeCounts();
+          this.computeAlerts();
+          this.applyFilter();
+          this.loadActivity();
+          this.closeForm();
+        },
+        error: (err) => {
+          alert(err?.error?.message ?? 'Failed to delete task.');
+        }
       });
     }
   }
