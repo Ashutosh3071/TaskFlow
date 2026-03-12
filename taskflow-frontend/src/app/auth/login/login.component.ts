@@ -42,7 +42,11 @@ export class LoginComponent {
         // save token + user data in one step
         this.#auth.setLoginResult(res);
         this.loading = false;         // clear in success path too
-        this.#router.navigate(['/dashboard']);
+        if (this.#auth.isAdmin()) {
+          this.#router.navigate(['/admin']);
+        } else {
+          this.#router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         this.error = err?.error?.message ?? 'Invalid email or password. Please try again.';

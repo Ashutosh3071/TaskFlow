@@ -49,11 +49,14 @@ export class AuthService {
   clearToken(): void {
     localStorage.removeItem(TOKEN_KEY);
   }
-  
-setLoginResult(res: AuthResponse) {
+
+  setLoginResult(res: AuthResponse): void {
     // store token + user info together
     this.setToken(res.token);
-    localStorage.setItem('user', JSON.stringify({ id: res.userId, email: res.email, fullName: res.fullName }));
+    localStorage.setItem(
+      'user',
+      JSON.stringify({ id: res.userId, email: res.email, fullName: res.fullName, admin: res.admin })
+    );
   }
 
 
@@ -85,6 +88,16 @@ setLoginResult(res: AuthResponse) {
       }
     }
     return 0;
+  }
+
+  isAdmin(): boolean {
+    const user = localStorage.getItem('user');
+    if (!user) return false;
+    try {
+      return !!JSON.parse(user).admin;
+    } catch {
+      return false;
+    }
   }
 
   /** Logout + navigate to /login (idempotent) */

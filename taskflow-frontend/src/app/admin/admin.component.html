@@ -1,0 +1,77 @@
+<app-navbar></app-navbar>
+
+<section class="admin">
+  <div class="admin__header">
+    <h2 class="admin__title">Admin · User Management</h2>
+    <span class="admin__badge">Admin Panel</span>
+  </div>
+
+  <div class="admin__card">
+    <div *ngIf="loading" class="admin__state">Loading users...</div>
+    <div *ngIf="!loading && error" class="admin__state admin__state--error">{{ error }}</div>
+
+    <div class="admin__table-wrap" *ngIf="!loading && !error">
+      <table class="admin__table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Admin</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th style="width: 220px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <td>{{ u.id }}</td>
+            <td>{{ u.fullName }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="admin__pill admin__pill--admin" *ngIf="u.admin">Admin</span>
+              <span *ngIf="!u.admin">-</span>
+            </td>
+            <td>
+              <span
+                class="admin__pill"
+                [ngClass]="u.active ? 'admin__pill--active' : 'admin__pill--inactive'"
+              >
+                {{ u.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>{{ u.createdAt | date: 'short' }}</td>
+            <td>
+              <div class="admin__actions">
+                <button
+                  type="button"
+                  class="admin__btn admin__btn--secondary"
+                  (click)="activate(u.id)"
+                  [disabled]="u.active"
+                >
+                  Activate
+                </button>
+                <button
+                  type="button"
+                  class="admin__btn admin__btn--secondary"
+                  (click)="deactivate(u.id)"
+                  [disabled]="!u.active || u.admin"
+                >
+                  Deactivate
+                </button>
+                <button
+                  type="button"
+                  class="admin__btn admin__btn--danger"
+                  (click)="softDelete(u.id)"
+                  [disabled]="u.admin"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

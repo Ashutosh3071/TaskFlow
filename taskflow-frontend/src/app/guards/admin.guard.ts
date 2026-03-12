@@ -3,14 +3,15 @@ import { CanActivate, Router, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
-export class GuestGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   #auth = inject(AuthService);
   #router = inject(Router);
+
   canActivate(): boolean | UrlTree {
-    if (!this.#auth.isAuthenticated()) {
+    if (this.#auth.isAuthenticated() && this.#auth.isAdmin()) {
       return true;
     }
-    // Redirect authenticated users based on role
-    return this.#auth.isAdmin() ? this.#router.parseUrl('/admin') : this.#router.parseUrl('/dashboard');
+    return this.#router.parseUrl('/login');
   }
 }
+

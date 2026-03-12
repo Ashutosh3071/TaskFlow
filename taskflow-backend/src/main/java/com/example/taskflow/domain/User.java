@@ -27,6 +27,12 @@ public class User {
     @Column(name = "password_hash", length = 255, nullable = false)
     private String passwordHash;
 
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
+    @Column(name = "admin", nullable = false)
+    private boolean admin = false;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -44,4 +50,10 @@ public class User {
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public Instant getCreatedAt() { return createdAt; }
     public List<Task> getTasks() { return tasks; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
 }
