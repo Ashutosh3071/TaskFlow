@@ -1,0 +1,31 @@
+<div class="subtasks">
+  <div class="subtasks__head">
+    <h4 class="subtasks__title">Subtasks</h4>
+    <span class="subtasks__summary">{{ doneLabel() }}</span>
+  </div>
+
+  <div class="bar" *ngIf="list.length">
+    <div class="bar__fill" [style.width.%]="donePct()" [class.bar__fill--done]="donePct()===100"></div>
+  </div>
+
+  <div class="subtasks__state" *ngIf="loading">Loading...</div>
+  <div class="subtasks__error" *ngIf="error">{{ error }}</div>
+
+  <div class="list">
+    <div class="row" *ngFor="let s of list" [class.row--done]="s.complete">
+      <input type="checkbox" [checked]="s.complete" (change)="toggle(s)" [disabled]="!canEdit()" />
+      <div class="row__title">{{ s.title }}</div>
+      <div class="row__meta" *ngIf="s.assignedToName">{{ s.assignedToName }}</div>
+      <button class="icon" type="button" *ngIf="canDelete(s)" (click)="remove(s)">🗑</button>
+    </div>
+  </div>
+
+  <div class="add" *ngIf="canEdit(); else readOnly">
+    <input class="input" [(ngModel)]="newTitle" (keyup.enter)="add()" placeholder="Add a subtask..." />
+    <button class="btn" type="button" (click)="add()">+</button>
+  </div>
+  <ng-template #readOnly>
+    <div class="subtasks__state">Viewer: read-only</div>
+  </ng-template>
+</div>
+

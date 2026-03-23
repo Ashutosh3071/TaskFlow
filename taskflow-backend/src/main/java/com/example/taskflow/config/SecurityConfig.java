@@ -3,7 +3,10 @@ package com.example.taskflow.config;
 import com.example.taskflow.security.CustomUserDetailsService;
 import com.example.taskflow.security.JwtAuthenticationFilter;
 import com.example.taskflow.security.JwtTokenService;
+import com.example.taskflow.repository.TokenBlocklistRepository;
+import com.example.taskflow.repository.UserSessionRepository;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -32,7 +35,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            JwtTokenService jwtTokenService,
-                                           CustomUserDetailsService userDetailsService) throws Exception {
+                                           CustomUserDetailsService userDetailsService,
+                                           TokenBlocklistRepository blocklist,
+                                           UserSessionRepository sessions) throws Exception {
         http
           .csrf(csrf -> csrf.disable())
           // ✅ Enable CORS so Spring Security applies the CorsConfigurationSource below
@@ -40,8 +45,10 @@ public class SecurityConfig {
           .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authorizeHttpRequests(reg -> reg
               .requestMatchers("/api/auth/**").permitAll()
+              // Allow CORS preflight to pass without auth
+              .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
               .anyRequest().authenticated())
-          .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, userDetailsService),
+          .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, userDetailsService, blocklist, sessions),
                            UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -54,7 +61,7 @@ public class SecurityConfig {
         // Allow your Angular dev origin (add more origins here as needed)
         cfg.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
         // Allow the methods your app uses (preflight will check these)
-        cfg.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        cfg.setAllowedMethods(java.util.List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         // Allow headers sent by the Angular app (Authorization for JWT, Content-Type for JSON)
         cfg.setAllowedHeaders(java.util.List.of("Authorization","Content-Type"));
         // For JWT in localStorage you usually do NOT need credentials (cookies)

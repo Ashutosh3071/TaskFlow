@@ -1,0 +1,141 @@
+<app-navbar></app-navbar>
+
+<section class="teams">
+  <div class="teams__header">
+    <div>
+      <h2 class="teams__title">Teams</h2>
+      <p class="teams__subtitle">Manage teams, members, and team tasks.</p>
+    </div>
+    <button type="button" class="btn btn--primary" *appHasRole="['ADMIN','MANAGER']" (click)="openCreate()">
+      + Create Team
+    </button>
+  </div>
+
+  <div class="stats" *ngIf="!loading && !error">
+    <div class="stat">
+      <div class="stat__label">My Teams</div>
+      <div class="stat__value">{{ myTeamsCount }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat__label">Total Members</div>
+      <div class="stat__value">{{ totalMembers }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat__label">Active Tasks</div>
+      <div class="stat__value">{{ activeTasks }}</div>
+    </div>
+  </div>
+
+  <div class="state" *ngIf="loading">Loading teams...</div>
+  <div class="state state--error" *ngIf="!loading && error">{{ error }}</div>
+
+  <div class="grid" *ngIf="!loading && !error">
+    <div
+      class="card"
+      *ngFor="let t of teams"
+      [class.card--selected]="selected?.id === t.id"
+      (click)="selectTeam(t)"
+    >
+      <div class="card__strip"></div>
+      <div class="card__title">{{ t.name }}</div>
+      <div class="card__meta">
+        <span class="chip">{{ t.members?.length ?? 0 }} members</span>
+        <span class="chip chip--muted">Manager: {{ t.managerName }}</span>
+      </div>
+      <div class="card__actions" *appHasRole="['ADMIN','MANAGER']">
+        <button type="button" class="link link--danger" (click)="$event.stopPropagation(); deleteTeam(t.id)">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail" *ngIf="selected && !loading && !error">
+    <div class="detail__head">
+      <div>
+        <h3 class="detail__title">{{ selected.name }}</h3>
+        <div class="detail__sub">
+          Manager:
+          <span class="role role--manager">{{ selected.managerName }}</span>
+          <span class="muted">({{ selected.managerEmail }})</span>
+        </div>
+        <div class="muted" *ngIf="selected.description">{{ selected.description }}</div>
+      </div>
+
+      <div class="detail__add" *appHasRole="['ADMIN','MANAGER']">
+        <select class="input" [(ngModel)]="memberToAddId">
+          <option [ngValue]="null">Invite member...</option>
+          <option *ngFor="let u of users" [ngValue]="u.id">{{ u.fullName }}{{ u.email ? ' (' + u.email + ')' : '' }}</option>
+        </select>
+        <button class="btn btn--secondary" type="button" (click)="addMember()" [disabled]="!memberToAddId">
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th style="width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of selected.members">
+            <td>{{ m.fullName }}</td>
+            <td><span [class]="roleBadgeClass(m.role)">{{ m.role }}</span></td>
+            <td>{{ m.email }}</td>
+            <td>{{ m.joinedAt | date: 'shortDate' }}</td>
+            <td>
+              <button
+                type="button"
+                class="link link--danger"
+                *appHasRole="['ADMIN','MANAGER']"
+                (click)="removeMember(m.userId)"
+                [disabled]="m.userId === selected.managerId"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!selected.members?.length">
+            <td colspan="5" class="muted">No members yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Team Modal (simple) -->
+  <div class="modal" *ngIf="showCreate">
+    <div class="modal__backdrop" (click)="closeCreate()"></div>
+    <div class="modal__panel">
+      <div class="modal__head">
+        <h3>Create Team</h3>
+        <button class="icon-btn" type="button" (click)="closeCreate()">×</button>
+      </div>
+
+      <div class="modal__body">
+        <div class="error" *ngIf="createError">{{ createError }}</div>
+        <label class="label">Team Name</label>
+        <input class="input" type="text" [formControl]="createForm.controls.name" />
+        <div class="hint" *ngIf="createForm.controls.name.touched && createForm.controls.name.invalid">
+          Team name is required.
+        </div>
+
+        <label class="label">Description (optional)</label>
+        <textarea class="input" rows="3" [formControl]="createForm.controls.description"></textarea>
+      </div>
+
+      <div class="modal__foot">
+        <button class="btn btn--secondary" type="button" (click)="closeCreate()">Cancel</button>
+        <button class="btn btn--primary" type="button" (click)="submitCreate()">Create</button>
+      </div>
+    </div>
+  </div>
+</section>
+

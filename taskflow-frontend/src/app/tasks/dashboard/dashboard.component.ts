@@ -8,13 +8,14 @@ import { AuthService } from '../../services/auth.service';
 import { AnalyticsPanelComponent } from './analytics-panel/analytics-panel.component';
 import { TaskSummaryResponse } from '../../models/task.model';
 import { ActivityFeedComponent } from '../activity-feed/activity-feed.component';
+import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 
 type Tab = 'ALL' | TaskStatus | 'ASSIGNED';
 
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule, NavbarComponent, TaskFormComponent, AnalyticsPanelComponent, ActivityFeedComponent],
+  imports: [CommonModule, NavbarComponent, TaskFormComponent, AnalyticsPanelComponent, ActivityFeedComponent, HasRoleDirective],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -49,6 +50,8 @@ export class DashboardComponent implements OnInit {
   selected: TaskResponse | null = null;
   isSaving = false;
 
+  subtaskSummary: Record<number, { total: number; completed: number }> = {};
+
   ngOnInit(): void {
     this.reload();
     this.loadActivity();
@@ -61,7 +64,18 @@ export class DashboardComponent implements OnInit {
       this.recomputeCounts();
       this.computeAlerts();
       this.applyFilter();
+      this.loadSubtaskSummaries();
     });
+  }
+
+  private loadSubtaskSummaries(): void {
+    const ids = this.tasks.map(t => t.id);
+    for (const id of ids) {
+      this.#tasks.subtaskSummary(id).subscribe({
+        next: (s) => { this.subtaskSummary[id] = s; },
+        error: () => {}
+      });
+    }
   }
 
   // ------- Derived State -------
@@ -194,6 +208,11 @@ export class DashboardComponent implements OnInit {
   openCreate(): void { this.selected = null; this.showForm = true; }
   openEdit(t: TaskResponse): void { this.selected = t; this.showForm = true; }
   closeForm(): void { this.showForm = false; this.selected = null; }
+
+  canMutate(): boolean {
+    const r = this.#auth.getCurrentRole();
+    return r === 'ADMIN' || r === 'MANAGER' || r === 'MEMBER';
+  }
 
   // ------- Save from modal -------
   onSaved(data: TaskRequest): void {

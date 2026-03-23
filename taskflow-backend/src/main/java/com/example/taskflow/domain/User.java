@@ -33,6 +33,10 @@ public class User {
     @Column(name = "admin", nullable = false)
     private boolean admin = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
+    private Role role = Role.MEMBER;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -54,6 +58,26 @@ public class User {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 
-    public boolean isAdmin() { return admin; }
-    public void setAdmin(boolean admin) { this.admin = admin; }
+    public boolean isAdmin() {
+        // Backward compatible: legacy boolean OR role-based admin
+        return admin || getRole() == Role.ADMIN;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+        if (admin && this.role != Role.ADMIN) {
+            this.role = Role.ADMIN;
+        }
+    }
+
+    public Role getRole() {
+        // Prefer the role column; fall back to legacy admin flag only when role is null (older rows).
+        if (role != null) return role;
+        return admin ? Role.ADMIN : Role.MEMBER;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+        this.admin = (role == Role.ADMIN);
+    }
 }

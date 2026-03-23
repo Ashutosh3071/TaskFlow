@@ -27,6 +27,8 @@ public class UserServiceImpl implements UserService {
         u.setFullName(fullName);
         u.setEmail(email);
         u.setPasswordHash(encoder.encode(rawPassword));
+        // Default new users to MEMBER role
+        u.setRole(com.example.taskflow.domain.Role.MEMBER);
         return users.save(u);
     }
 

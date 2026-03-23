@@ -18,6 +18,7 @@ public class TaskRequest {
     private Priority priority = Priority.MED;
     @JsonAlias("assignedTo")
     private Long assignedToId;
+    private Long teamId;
 
     // Getters/Setters
     public String getTitle() { return title; }
@@ -32,4 +33,6 @@ public class TaskRequest {
     public void setPriority(Priority priority) { this.priority = priority; }
     public Long getAssignedToId() { return assignedToId; }
     public void setAssignedToId(Long assignedToId) { this.assignedToId = assignedToId; }
+    public Long getTeamId() { return teamId; }
+    public void setTeamId(Long teamId) { this.teamId = teamId; }
 }

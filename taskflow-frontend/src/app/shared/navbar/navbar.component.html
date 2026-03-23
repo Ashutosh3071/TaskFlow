@@ -1,13 +1,29 @@
 <header class="nav">
   <div class="nav__bar">
+    <!-- Admin sees brand link to admin panel -->
     <a
+      *appHasRole="['ADMIN']"
       class="nav__brand"
-      [routerLink]="auth.isAuthenticated() && auth.isAdmin() ? '/admin' : '/dashboard'"
+      routerLink="/admin"
+    >
+      <span class="brand-dot"></span>TaskFlow
+    </a>
+    <!-- Other roles go to dashboard -->
+    <a
+      *ngIf="!auth.isAdmin()"
+      class="nav__brand"
+      routerLink="/dashboard"
     >
       <span class="brand-dot"></span>TaskFlow
     </a>
     <div class="nav__spacer"></div>
     <ng-container *ngIf="auth.isAuthenticated(); else guest">
+      <nav class="nav__links">
+        <a class="nav__link" routerLink="/dashboard">Dashboard</a>
+        <a class="nav__link" routerLink="/teams" *appHasRole="['ADMIN','MANAGER']">Teams</a>
+        <a class="nav__link" routerLink="/admin" *appHasRole="['ADMIN']">Admin</a>
+        <a class="nav__link" routerLink="/settings">Settings</a>
+      </nav>
       <span class="nav__hello">Hello, {{ fullName }}</span>
       <!-- <button class="nav__avatar" aria-label="profile"></button> -->
       <button class="nav__btn" (click)="auth.logout()">Logout</button>

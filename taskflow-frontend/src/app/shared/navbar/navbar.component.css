@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #1f3b63;
+  background: var(--nav-bg);
   color: #fff;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
@@ -31,6 +31,23 @@
   display: inline-block;
 }
 .nav__spacer { flex: 1; }
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 10px;
+}
+.nav__link {
+  color: #dbeafe;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.nav__link:hover {
+  background: rgba(255,255,255,0.10);
+}
 .nav__hello {
   color: #dbeafe;
   font-weight: 600;

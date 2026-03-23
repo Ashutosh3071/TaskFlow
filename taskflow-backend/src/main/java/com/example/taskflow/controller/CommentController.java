@@ -4,6 +4,7 @@ import com.example.taskflow.domain.User;
 import com.example.taskflow.security.UserPrincipal;
 import com.example.taskflow.service.TaskCommentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         User user = currentUser();
         commentService.delete(commentId, user);

@@ -1,0 +1,60 @@
+<div class="time">
+  <div class="time__head">
+    <h4 class="time__title">Time Tracking</h4>
+    <div class="time__total">Total: {{ fmt(totalMinutes) }}</div>
+  </div>
+
+  <div class="time__error" *ngIf="error">{{ error }}</div>
+
+  <div class="timer" *ngIf="canEdit(); else readOnly">
+    <div class="timer__display">{{ hhmmss() }}</div>
+    <button class="btn btn--primary" type="button" *ngIf="!running" (click)="start()">Start Timer</button>
+    <button class="btn btn--danger" type="button" *ngIf="running" (click)="stop()">Stop Timer</button>
+  </div>
+  <ng-template #readOnly>
+    <div class="time__state">Viewer: read-only</div>
+  </ng-template>
+
+  <div class="manual" *ngIf="canEdit()">
+    <button class="link" type="button" (click)="manualOpen = !manualOpen">
+      {{ manualOpen ? 'Hide manual log' : 'Log time manually' }}
+    </button>
+    <div class="manual__panel" *ngIf="manualOpen">
+      <div class="grid">
+        <div>
+          <label class="label">Hours</label>
+          <input class="input" type="number" min="0" max="99" [(ngModel)]="hours" />
+        </div>
+        <div>
+          <label class="label">Minutes</label>
+          <input class="input" type="number" min="0" max="59" [(ngModel)]="minutes" />
+        </div>
+        <div>
+          <label class="label">Date</label>
+          <input class="input" type="date" [(ngModel)]="date" />
+        </div>
+      </div>
+      <label class="label">Note (optional)</label>
+      <input class="input" type="text" [(ngModel)]="note" />
+      <div class="actions">
+        <button class="btn btn--primary" type="button" (click)="submitManual()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="logs">
+    <h5 class="logs__title">Time Log</h5>
+    <div class="log" *ngFor="let l of logs">
+      <div class="log__top">
+        <span class="badge" [class.badge--timer]="!l.manual" [class.badge--manual]="l.manual">{{ l.manual ? 'Manual' : 'Timer' }}</span>
+        <span class="muted">{{ l.logDate }}</span>
+        <span class="muted">· {{ fmt(l.durationMinutes) }}</span>
+        <span class="muted">· {{ l.loggedByName }}</span>
+        <button class="icon" type="button" *ngIf="canDelete(l)" (click)="delete(l)">🗑</button>
+      </div>
+      <div class="log__note" *ngIf="l.note">{{ l.note }}</div>
+    </div>
+    <div class="muted" *ngIf="!logs.length">No entries yet.</div>
+  </div>
+</div>
+

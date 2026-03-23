@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { HasRoleDirective } from '../directives/has-role.directive';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
   standalone: true,
   selector: 'app-navbar',
-  imports: [RouterLink, NgIf],
+  imports: [RouterLink, NgIf, HasRoleDirective],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })

@@ -45,8 +45,16 @@ public class Task {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User assignedTo;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "team_id", foreignKey = @ForeignKey(name = "fk_tasks_team"))
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Team team;
+
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TaskComment> comments = new ArrayList<>();
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
@@ -73,7 +81,11 @@ public class Task {
     public void setOwner(User owner) { this.owner = owner; }
     public User getAssignedTo() { return assignedTo; }
     public void setAssignedTo(User assignedTo) { this.assignedTo = assignedTo; }
+    public Team getTeam() { return team; }
+    public void setTeam(Team team) { this.team = team; }
     public List<TaskComment> getComments() { return comments; }
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

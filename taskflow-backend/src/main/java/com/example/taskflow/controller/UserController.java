@@ -21,7 +21,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> list() {
         List<UserResponse> users = userRepo.findAll().stream()
-                .map(u -> new UserResponse(u.getId(), u.getFullName()))
+                .map(u -> new UserResponse(u.getId(), u.getFullName(), u.getEmail(), u.getRole().name()))
                 .toList();
         return ResponseEntity.ok(users);
     }

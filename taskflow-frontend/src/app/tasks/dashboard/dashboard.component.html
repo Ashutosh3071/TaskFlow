@@ -20,7 +20,7 @@
       <button type="button" class="btn secondary" (click)="toggleAnalytics()">
         {{ showAnalytics ? 'Hide Analytics' : 'Show Analytics' }}
       </button>
-      <button type="button" class="btn primary" (click)="openCreate()">+ New Task</button>
+      <button type="button" class="btn primary" *appHasRole="['ADMIN','MANAGER','MEMBER']" (click)="openCreate()">+ New Task</button>
     </div>
   </div>
 
@@ -62,6 +62,19 @@
           </div>
 
           <div class="card__meta assignee">{{ task.assignedToName || 'Unassigned' }}</div>
+
+          <div class="subprog" *ngIf="subtaskSummary[task.id]?.total">
+            <div class="subprog__label">
+              {{ subtaskSummary[task.id].completed }} / {{ subtaskSummary[task.id].total }} subtasks done
+            </div>
+            <div class="subprog__bar">
+              <div
+                class="subprog__fill"
+                [class.subprog__fill--done]="subtaskSummary[task.id].completed === subtaskSummary[task.id].total"
+                [style.width.%]="(subtaskSummary[task.id].completed / subtaskSummary[task.id].total) * 100"
+              ></div>
+            </div>
+          </div>
           <div
             class="card__meta"
             [ngClass]="{
@@ -79,8 +92,8 @@
           </div>
 
           <footer class="card__actions">
-            <button type="button" class="btn edit" (click)="openEdit(task)">Edit</button>
-            <button type="button" class="btn delete" (click)="confirmDelete(task)">Delete</button>
+            <button type="button" class="btn edit" *ngIf="canMutate()" (click)="openEdit(task)">Edit</button>
+            <button type="button" class="btn delete" *ngIf="canMutate()" (click)="confirmDelete(task)">Delete</button>
           </footer>
         </article>
       </div>

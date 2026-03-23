@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <form class="comment-form" [formGroup]="form" (ngSubmit)="post()">
+  <form class="comment-form" [formGroup]="form" (ngSubmit)="post()" *ngIf="true">
     <textarea formControlName="body" rows="3" placeholder="Add a comment..."></textarea>
     <button type="submit" [disabled]="form.invalid">Post Comment</button>
   </form>

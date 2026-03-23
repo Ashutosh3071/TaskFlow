@@ -34,6 +34,9 @@ public class TaskCommentServiceImpl implements TaskCommentService {
     public TaskComment create(Long taskId, User author, String body) {
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        if (task.isDeleted()) {
+            throw new IllegalArgumentException("Task not found");
+        }
         TaskComment comment = new TaskComment(task, author, body);
         TaskComment saved = commentRepo.save(comment);
         activityLogs.log(task, author, "COMMENT_ADDED",

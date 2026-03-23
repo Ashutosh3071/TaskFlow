@@ -129,7 +129,11 @@
 
 .comments-pane {
   padding: 14px 14px;
+  display: grid;
+  gap: 10px;
 }
+
+.spacer { height: 2px; }
 
 @media (max-width: 980px) {
   .modal--edit {

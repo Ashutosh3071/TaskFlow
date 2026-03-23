@@ -1,6 +1,7 @@
 package com.example.taskflow.config;
 
 import com.example.taskflow.domain.User;
+import com.example.taskflow.domain.Role;
 import com.example.taskflow.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,12 +45,22 @@ public class AdminBootstrapConfig {
         });
 
         admin.setPasswordHash(encoder.encode(adminPassword));
-        admin.setAdmin(true);
+        admin.setRole(com.example.taskflow.domain.Role.ADMIN);
         admin.setActive(true);
 
         users.save(admin);
 
         log.info("Admin user ensured: email={}, id={}", admin.getEmail(), admin.getId());
+
+        // Backfill role for older rows where it may be NULL (pre-Week2 users).
+        var nullRoleUsers = users.findAllByRoleIsNull();
+        if (!nullRoleUsers.isEmpty()) {
+            for (User u : nullRoleUsers) {
+                u.setRole(u.isAdmin() ? Role.ADMIN : Role.MEMBER);
+            }
+            users.saveAll(nullRoleUsers);
+            log.info("Backfilled role for {} users", nullRoleUsers.size());
+        }
     }
 }
 

@@ -12,6 +12,8 @@ export interface TaskResponse {
   ownerName: string;
   assignedToId?: number | null;
   assignedToName?: string | null;
+  teamId?: number | null;
+  teamName?: string | null;
   createdAt: string;
   updatedAt?: string | null;
 }
@@ -23,6 +25,7 @@ export interface TaskRequest {
   status: TaskStatus;
   priority?: Priority;
   assignedToId?: number | null;
+  teamId?: number | null;
 }
 
 export interface TaskComment {
@@ -41,6 +44,8 @@ export interface TaskCommentRequest {
 export interface UserResponse {
   id: number;
   fullName: string;
+  email?: string;
+  role?: 'ADMIN' | 'MANAGER' | 'MEMBER' | 'VIEWER';
 }
 
 export interface TaskSummaryResponse {

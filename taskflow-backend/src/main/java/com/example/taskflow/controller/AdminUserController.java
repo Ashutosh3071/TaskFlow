@@ -1,7 +1,10 @@
 package com.example.taskflow.controller;
 
+import com.example.taskflow.domain.Role;
 import com.example.taskflow.domain.User;
 import com.example.taskflow.dto.AdminUserResponse;
+import com.example.taskflow.dto.ChangeUserRoleRequest;
+import com.example.taskflow.dto.ChangeUserStatusRequest;
 import com.example.taskflow.exception.ForbiddenException;
 import com.example.taskflow.repository.UserRepository;
 import com.example.taskflow.security.UserPrincipal;
@@ -32,6 +35,10 @@ public class AdminUserController {
         }
     }
 
+    private User getTargetOrThrow(Long id) {
+        return users.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
     @GetMapping
     public ResponseEntity<List<AdminUserResponse>> listAll() {
         assertAdmin();
@@ -40,39 +47,51 @@ public class AdminUserController {
                         u.getId(),
                         u.getFullName(),
                         u.getEmail(),
+                        u.getRole().name(),
                         u.isActive(),
-                        u.isAdmin(),
                         u.getCreatedAt()
                 ))
                 .toList();
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping("/{id}/activate")
-    public ResponseEntity<Void> activate(@PathVariable Long id) {
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<Void> changeRole(@PathVariable Long id, @RequestBody ChangeUserRoleRequest req) {
         assertAdmin();
-        User target = users.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        target.setActive(true);
+        User target = getTargetOrThrow(id);
+        Role next;
+        try {
+            next = Role.valueOf(req.getRole().trim().toUpperCase());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid role");
+        }
+        target.setRole(next);
         users.save(target);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/deactivate")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> changeStatus(@PathVariable Long id, @RequestBody ChangeUserStatusRequest req) {
         assertAdmin();
-        User target = users.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (target.isAdmin()) {
+        User target = getTargetOrThrow(id);
+        if (target.getRole() == Role.ADMIN && !req.isActive()) {
             throw new ForbiddenException("Admin account cannot be deactivated");
         }
-        target.setActive(false);
+        target.setActive(req.isActive());
         users.save(target);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDelete(@PathVariable Long id) {
-        // Soft delete = deactivate for this app
-        return deactivate(id);
+        assertAdmin();
+        User target = getTargetOrThrow(id);
+        if (target.getRole() == Role.ADMIN) {
+            throw new ForbiddenException("Admin account cannot be deactivated");
+        }
+        target.setActive(false);
+        users.save(target);
+        return ResponseEntity.noContent().build();
     }
 }
 

@@ -8,6 +8,7 @@ import com.example.taskflow.security.UserPrincipal;
 import com.example.taskflow.service.TaskCommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,7 @@ public class TaskCommentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public ResponseEntity<TaskCommentResponse> createComment(
             @PathVariable Long taskId,
             @Valid @RequestBody TaskCommentRequest req) {

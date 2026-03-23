@@ -8,8 +8,8 @@ interface AdminUser {
   id: number;
   fullName: string;
   email: string;
+  role: 'ADMIN' | 'MANAGER' | 'MEMBER' | 'VIEWER';
   active: boolean;
-  admin: boolean;
   createdAt: string;
 }
 
@@ -47,26 +47,26 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  activate(id: number): void {
+  setStatus(id: number, active: boolean): void {
     this.error = '';
-    this.#http.put<void>(`${this.#base}/${id}/activate`, {}).subscribe({
+    this.#http.patch<void>(`${this.#base}/${id}/status`, { active }).subscribe({
       next: () => {
-        this.users = this.users.map(u => u.id === id ? { ...u, active: true } : u);
+        this.users = this.users.map(u => u.id === id ? { ...u, active } : u);
       },
       error: (err) => {
-        this.error = err?.error?.message ?? 'Failed to activate user';
+        this.error = err?.error?.message ?? 'Failed to update status';
       }
     });
   }
 
-  deactivate(id: number): void {
+  setRole(id: number, role: AdminUser['role']): void {
     this.error = '';
-    this.#http.put<void>(`${this.#base}/${id}/deactivate`, {}).subscribe({
+    this.#http.patch<void>(`${this.#base}/${id}/role`, { role }).subscribe({
       next: () => {
-        this.users = this.users.map(u => u.id === id ? { ...u, active: false } : u);
+        this.users = this.users.map(u => u.id === id ? { ...u, role } : u);
       },
       error: (err) => {
-        this.error = err?.error?.message ?? 'Failed to deactivate user';
+        this.error = err?.error?.message ?? 'Failed to update role';
       }
     });
   }

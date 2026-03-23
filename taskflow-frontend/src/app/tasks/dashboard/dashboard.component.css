@@ -173,6 +173,29 @@
   justify-content: flex-end;
 }
 
+.subprog {
+  margin-top: 6px;
+}
+.subprog__label {
+  color: #64748b;
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.subprog__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.18);
+  overflow: hidden;
+}
+.subprog__fill {
+  height: 100%;
+  background: #2563eb;
+}
+.subprog__fill--done {
+  background: #22c55e;
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 8px;

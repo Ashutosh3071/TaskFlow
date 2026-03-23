@@ -17,7 +17,7 @@
             <th>ID</th>
             <th>Full Name</th>
             <th>Email</th>
-            <th>Admin</th>
+            <th>Role</th>
             <th>Status</th>
             <th>Created At</th>
             <th style="width: 220px;">Actions</th>
@@ -29,8 +29,16 @@
             <td>{{ u.fullName }}</td>
             <td>{{ u.email }}</td>
             <td>
-              <span class="admin__pill admin__pill--admin" *ngIf="u.admin">Admin</span>
-              <span *ngIf="!u.admin">-</span>
+              <select
+                class="admin__select"
+                [value]="u.role"
+                (change)="setRole(u.id, ($any($event.target).value))"
+              >
+                <option value="ADMIN">ADMIN</option>
+                <option value="MANAGER">MANAGER</option>
+                <option value="MEMBER">MEMBER</option>
+                <option value="VIEWER">VIEWER</option>
+              </select>
             </td>
             <td>
               <span
@@ -46,7 +54,7 @@
                 <button
                   type="button"
                   class="admin__btn admin__btn--secondary"
-                  (click)="activate(u.id)"
+                  (click)="setStatus(u.id, true)"
                   [disabled]="u.active"
                 >
                   Activate
@@ -54,8 +62,8 @@
                 <button
                   type="button"
                   class="admin__btn admin__btn--secondary"
-                  (click)="deactivate(u.id)"
-                  [disabled]="!u.active || u.admin"
+                  (click)="setStatus(u.id, false)"
+                  [disabled]="!u.active || u.role === 'ADMIN'"
                 >
                   Deactivate
                 </button>
@@ -63,7 +71,7 @@
                   type="button"
                   class="admin__btn admin__btn--danger"
                   (click)="softDelete(u.id)"
-                  [disabled]="u.admin"
+                  [disabled]="u.role === 'ADMIN'"
                 >
                   Delete
                 </button>

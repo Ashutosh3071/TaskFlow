@@ -1,0 +1,148 @@
+<app-navbar></app-navbar>
+
+<section class="settings">
+  <div class="settings__wrap">
+    <aside class="settings__nav">
+      <button class="tab" [class.is-active]="tab==='profile'" (click)="setTab('profile')">Profile</button>
+      <button class="tab" [class.is-active]="tab==='security'" (click)="setTab('security')">Security</button>
+      <button class="tab" [class.is-active]="tab==='theme'" (click)="setTab('theme')">Theme</button>
+      <button class="tab" [class.is-active]="tab==='notifications'" (click)="setTab('notifications')">Notifications</button>
+      <button class="tab" *appHasRole="['ADMIN','MANAGER']" [class.is-active]="tab==='team'" (click)="setTab('team')">
+        Team Settings
+      </button>
+    </aside>
+
+    <main class="settings__main">
+      <div class="state" *ngIf="loading">Loading...</div>
+      <div class="state state--error" *ngIf="!loading && error">{{ error }}</div>
+      <div class="state state--ok" *ngIf="!loading && success">{{ success }}</div>
+
+      <!-- Profile -->
+      <div *ngIf="tab==='profile' && !loading">
+        <h2>Profile</h2>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="grid2">
+            <div>
+              <label class="label">Full Name</label>
+              <input class="input" type="text" formControlName="fullName" />
+            </div>
+            <div>
+              <label class="label">Email</label>
+              <input class="input" type="email" formControlName="email" />
+            </div>
+          </div>
+
+          <label class="label">Current Password (required to change email)</label>
+          <input class="input" type="password" formControlName="currentPassword" />
+
+          <div class="grid2">
+            <div>
+              <label class="label">Avatar Colour</label>
+              <input class="input" type="color" formControlName="avatarColour" />
+            </div>
+            <div>
+              <label class="label">Bio (max 200)</label>
+              <input class="input" type="text" formControlName="bio" maxlength="200" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn--primary" type="submit">Save Profile</button>
+          </div>
+        </form>
+
+        <div class="danger">
+          <h3>Danger Zone</h3>
+          <p>Type your email to confirm deletion.</p>
+          <input class="input" [(ngModel)]="deleteEmail" placeholder="Confirm email" />
+          <button class="btn btn--danger" type="button" (click)="deleteMe()">Delete My Account</button>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div *ngIf="tab==='security' && !loading">
+        <h2>Security</h2>
+        <h3>Change Password</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+          <div class="grid2">
+            <div>
+              <label class="label">Current Password</label>
+              <input class="input" type="password" formControlName="currentPassword" />
+            </div>
+            <div>
+              <label class="label">New Password</label>
+              <input class="input" type="password" formControlName="newPassword" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn--primary" type="submit">Update Password</button>
+          </div>
+        </form>
+
+        <h3 class="mt">Active Sessions</h3>
+        <div class="actions">
+          <button class="btn btn--secondary" type="button" (click)="loadSessions()">Refresh</button>
+          <button class="btn btn--secondary" type="button" (click)="revokeOthers()">Revoke All Others</button>
+        </div>
+
+        <div class="table-wrap" *ngIf="sessions.length">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Device</th>
+                <th>Login</th>
+                <th>Last Active</th>
+                <th>Expires</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of sessions">
+                <td>{{ s.deviceHint || '-' }} <span class="pill" *ngIf="s.current">Current</span></td>
+                <td>{{ s.loginTime | date:'short' }}</td>
+                <td>{{ s.lastActive | date:'short' }}</td>
+                <td>{{ s.expiresAt | date:'short' }}</td>
+                <td>
+                  <button class="link link--danger" type="button" (click)="revoke(s.jti)" [disabled]="s.current">Revoke</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Theme -->
+      <div *ngIf="tab==='theme' && !loading">
+        <h2>Theme</h2>
+        <div class="theme-grid">
+          <button class="theme-card" [class.is-active]="themeChoice==='LIGHT'" (click)="selectTheme('LIGHT')">Light</button>
+          <button class="theme-card" [class.is-active]="themeChoice==='DARK'" (click)="selectTheme('DARK')">Dark</button>
+          <button class="theme-card" [class.is-active]="themeChoice==='SYSTEM'" (click)="selectTheme('SYSTEM')">System</button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div *ngIf="tab==='notifications' && !loading">
+        <h2>Notifications</h2>
+        <form [formGroup]="notifyForm" class="notify">
+          <label class="row"><input type="checkbox" formControlName="notifyAssigned" /> Task assigned to me</label>
+          <label class="row"><input type="checkbox" formControlName="notifyComment" /> Comment on my task</label>
+          <label class="row"><input type="checkbox" formControlName="notifySubtask" /> Subtask completed</label>
+          <label class="row"><input type="checkbox" formControlName="notifyOverdue" /> Task overdue</label>
+          <label class="row"><input type="checkbox" formControlName="notifyTeam" /> Team updates</label>
+          <p class="muted">Changes auto-save.</p>
+        </form>
+      </div>
+
+      <!-- Team Settings -->
+      <ng-container *appHasRole="['ADMIN','MANAGER']">
+        <div *ngIf="tab==='team' && !loading">
+        <h2>Team Settings</h2>
+        <p class="muted">Use the Teams page to edit teams and members.</p>
+        <a class="btn btn--secondary" routerLink="/teams">Go to Teams</a>
+        </div>
+      </ng-container>
+    </main>
+  </div>
+</section>
+

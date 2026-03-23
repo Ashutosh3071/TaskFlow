@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { map, catchError } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthRequest, AuthResponse, RegisterRequest } from '../models/auth.model';
+import { AuthRequest, AuthResponse, RegisterRequest, Role } from '../models/auth.model';
 
 const TOKEN_KEY = 'taskflow_token';
 
@@ -51,11 +51,17 @@ export class AuthService {
   }
 
   setLoginResult(res: AuthResponse): void {
-    // store token + user info together
     this.setToken(res.token);
     localStorage.setItem(
       'user',
-      JSON.stringify({ id: res.userId, email: res.email, fullName: res.fullName, admin: res.admin })
+      JSON.stringify({
+        id: res.userId,
+        email: res.email,
+        fullName: res.fullName,
+        role: res.role,
+        // keep legacy admin flag for backward-compat templates/guards
+        admin: res.role === 'ADMIN'
+      })
     );
   }
 
@@ -90,15 +96,27 @@ export class AuthService {
     return 0;
   }
 
-  isAdmin(): boolean {
-    const user = localStorage.getItem('user');
-    if (!user) return false;
+  /** Get full current user object from storage, or null */
+  getCurrentUser():
+    | { id: number; email: string; fullName: string; role?: Role; admin?: boolean }
+    | null {
+    const raw = localStorage.getItem('user');
+    if (!raw) return null;
     try {
-      return !!JSON.parse(user).admin;
+      return JSON.parse(raw);
     } catch {
-      return false;
+      return null;
     }
   }
+
+  getCurrentRole(): Role | null {
+  const u = this.getCurrentUser();
+  return u?.role ?? null;
+}
+
+  isAdmin(): boolean {
+  return this.getCurrentRole() === 'ADMIN';
+}
 
   /** Logout + navigate to /login (idempotent) */
   logout(): void {

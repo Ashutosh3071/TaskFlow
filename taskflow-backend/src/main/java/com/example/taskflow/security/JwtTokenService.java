@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtTokenService {
@@ -26,6 +28,11 @@ public class JwtTokenService {
     public String generateToken(String subject, Map<String, Object> claims) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
+        // Ensure jti exists for session revocation
+        if (!claims.containsKey("jti")) {
+            claims = new java.util.HashMap<>(claims);
+            claims.put("jti", UUID.randomUUID().toString());
+        }
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -38,5 +45,15 @@ public class JwtTokenService {
     public String getSubject(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
+    }
+
+    public Instant getExpirationInstant(Claims claims) {
+        Date exp = claims.getExpiration();
+        return exp != null ? exp.toInstant() : Instant.now();
     }
 }

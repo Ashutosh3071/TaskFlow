@@ -39,15 +39,19 @@ export class LoginComponent {
 
     this.#auth.login({ email, password }).subscribe({
       next: (res) => {
-        // save token + user data in one step
-        this.#auth.setLoginResult(res);
-        this.loading = false;         // clear in success path too
-        if (this.#auth.isAdmin()) {
-          this.#router.navigate(['/admin']);
-        } else {
-          this.#router.navigate(['/dashboard']);
-        }
-      },
+  console.log("LOGIN RESPONSE:", res);
+
+  this.#auth.setLoginResult(res);
+  this.loading = false;
+
+  console.log("ROLE AFTER SAVE:", this.#auth.getCurrentRole());
+
+  if (this.#auth.isAdmin()) {
+    this.#router.navigate(['/admin']);
+  } else {
+    this.#router.navigate(['/dashboard']);
+  }
+},
       error: (err) => {
         this.error = err?.error?.message ?? 'Invalid email or password. Please try again.';
         this.loading = false;

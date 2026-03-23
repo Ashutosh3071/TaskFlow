@@ -112,6 +112,17 @@
   gap: 6px;
 }
 
+.admin__select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  color: #0f172a;
+}
+
 .admin__btn {
   border-radius: 8px;
   border: 1px solid transparent;

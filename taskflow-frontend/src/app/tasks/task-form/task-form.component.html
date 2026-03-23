@@ -51,13 +51,33 @@
         </div>
 
         <div class="actions" [class.actions--edit]="isEdit">
-          <button type="submit" class="btn btn--primary" [disabled]="form.invalid || loading">{{ isEdit ? 'Edit Task' : 'Create Task' }}</button>
-          <button type="button" class="btn btn--danger" *ngIf="isEdit" (click)="requestDelete.emit()">Delete</button>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            *ngIf="canMutate()"
+            [disabled]="form.invalid || loading"
+          >
+            {{ isEdit ? 'Edit Task' : 'Create Task' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn--danger"
+            *ngIf="isEdit && canMutate()"
+            (click)="requestDelete.emit()"
+          >
+            Delete
+          </button>
         </div>
       </form>
 
       <aside class="comments-pane" *ngIf="isEdit && task?.id">
+        <app-subtasks [taskId]="task?.id!"></app-subtasks>
+        <div class="spacer"></div>
+        <app-time-tracking [taskId]="task?.id!"></app-time-tracking>
+        <div class="spacer"></div>
         <app-task-comments [taskId]="task?.id!"></app-task-comments>
+        <div class="spacer"></div>
+        <app-task-attachments [taskId]="task?.id!"></app-task-attachments>
       </aside>
     </div>
   </div>

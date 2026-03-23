@@ -43,6 +43,11 @@ export class TaskCommentsComponent implements OnChanges {
   }
 
   post(): void {
+    const role = this.#auth.getCurrentRole();
+    if (role === 'VIEWER') {
+      this.error = 'You do not have permission to comment.';
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -56,6 +61,11 @@ export class TaskCommentsComponent implements OnChanges {
   }
 
   deleteComment(id: number): void {
+    const role = this.#auth.getCurrentRole();
+    if (role === 'VIEWER') {
+      this.error = 'You do not have permission to delete comments.';
+      return;
+    }
     this.error = '';
     this.#taskService.deleteComment(id).subscribe({
       next: () => { this.comments = this.comments.filter(c => c.id !== id); },

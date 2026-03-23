@@ -1,0 +1,50 @@
+.time {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--bg-card);
+}
+
+.time__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.time__title { margin: 0; font-size: 14px; font-weight: 900; }
+.time__total { color: var(--text-muted); font-weight: 900; font-size: 12px; }
+.time__error { color: #b91c1c; padding: 6px 0; }
+.time__state { color: var(--text-muted); padding: 6px 0; }
+
+.timer { display: grid; gap: 10px; margin-top: 8px; }
+.timer__display {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 900;
+  font-size: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.btn { border-radius: 10px; border: 1px solid transparent; padding: 8px 10px; font-weight: 900; cursor: pointer; }
+.btn--primary { background: #2563eb; color: #fff; }
+.btn--danger { background: #ef4444; color: #fff; }
+
+.manual { margin-top: 10px; }
+.link { background: transparent; border: 0; cursor: pointer; font-weight: 900; color: #2563eb; }
+.manual__panel { margin-top: 8px; padding: 10px; border: 1px solid var(--border-color); border-radius: 12px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.label { display: block; font-size: 12px; font-weight: 900; color: var(--text-muted); margin: 8px 0 6px; }
+.input { width: 100%; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; background: transparent; color: var(--text-primary); }
+.actions { margin-top: 10px; display: flex; justify-content: flex-end; }
+
+.logs { margin-top: 12px; }
+.logs__title { margin: 0 0 8px; font-size: 13px; font-weight: 900; }
+.log { border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+.log__top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.badge { padding: 2px 8px; border-radius: 999px; font-weight: 900; font-size: 12px; }
+.badge--timer { background: rgba(20,184,166,0.15); color: #0f766e; }
+.badge--manual { background: rgba(245,158,11,0.15); color: #b45309; }
+.muted { color: var(--text-muted); font-weight: 800; font-size: 12px; }
+.icon { margin-left: auto; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 8px; background: transparent; cursor: pointer; }
+.log__note { margin-top: 6px; color: var(--text-primary); }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
+

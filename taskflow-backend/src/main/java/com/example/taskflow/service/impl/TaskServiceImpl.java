@@ -8,8 +8,10 @@ import com.example.taskflow.exception.ForbiddenException;
 import com.example.taskflow.exception.ResourceNotFoundException;
 import com.example.taskflow.repository.ActivityLogRepository;
 import com.example.taskflow.repository.TaskRepository;
+import com.example.taskflow.repository.TeamMemberRepository;
 import com.example.taskflow.service.ActivityLogService;
 import com.example.taskflow.service.TaskService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,27 +23,32 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository tasks;
     private final ActivityLogService activityLogs;
     private final ActivityLogRepository activityLogRepo;
+    private final TeamMemberRepository teamMembers;
 
-    public TaskServiceImpl(TaskRepository tasks, ActivityLogService activityLogs, ActivityLogRepository activityLogRepo) {
+    public TaskServiceImpl(TaskRepository tasks, ActivityLogService activityLogs, ActivityLogRepository activityLogRepo,
+                           TeamMemberRepository teamMembers) {
         this.tasks = tasks;
         this.activityLogs = activityLogs;
         this.activityLogRepo = activityLogRepo;
+        this.teamMembers = teamMembers;
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER','VIEWER')")
     public List<Task> findAll(User owner, Priority priority) {
         if (priority == null) {
-            return tasks.findAllByOwner(owner);
+            return tasks.findAllVisibleTo(owner);
         }
         if (priority == Priority.MEDIUM || priority == Priority.MED) {
-            return tasks.findAllByOwnerAndPriorityIn(owner, List.of(Priority.MED, Priority.MEDIUM));
+            return tasks.findAllVisibleToAndPriorityIn(owner, List.of(Priority.MED, Priority.MEDIUM));
         }
-        return tasks.findAllByOwnerAndPriority(owner, priority);
+        return tasks.findAllVisibleToAndPriority(owner, priority);
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER','VIEWER')")
     public TaskSummaryResponse getSummary(User owner) {
-        int total = (int) tasks.countByOwner(owner);
+        int total = (int) tasks.countByOwnerAndDeletedFalse(owner);
         TaskSummaryResponse.ByStatus byStatus = new TaskSummaryResponse.ByStatus(
                 (int) tasks.countTodoByOwner(owner),
                 (int) tasks.countInProgressByOwner(owner),
@@ -64,6 +71,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public Task create(User owner, Task task) {
         task.setOwner(owner);
         Task saved = tasks.save(task);
@@ -73,11 +81,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER','VIEWER')")
     public Task findByIdOrThrow(User owner, Long id) {
         return tasks.findById(id)
                 .map(t -> {
-                    if (!t.getOwner().getId().equals(owner.getId())) {
-                        throw new ForbiddenException("You do not own this task");
+                    if (t.isDeleted()) {
+                        throw new ResourceNotFoundException("Task not found");
+                    }
+                    boolean canAccess =
+                            t.getOwner().getId().equals(owner.getId())
+                                    || (t.getAssignedTo() != null && t.getAssignedTo().getId().equals(owner.getId()))
+                                    || (t.getTeam() != null && teamMembers.existsByTeamAndUser(t.getTeam(), owner))
+                                    || owner.getRole() == com.example.taskflow.domain.Role.ADMIN;
+
+                    if (!canAccess) {
+                        throw new ForbiddenException("You do not have access to this task");
                     }
                     return t;
                 })
@@ -85,6 +103,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public Task update(User owner, Long id, Task updated) {
         Task existing = findByIdOrThrow(owner, id);
         var oldStatus = existing.getStatus();
@@ -120,6 +139,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public void delete(User owner, Long id) {
         Task existing = findByIdOrThrow(owner, id);
         String title = existing.getTitle();
@@ -128,7 +148,8 @@ public class TaskServiceImpl implements TaskService {
         // (We keep the rows so the feed still shows the action text.)
         activityLogRepo.detachTask(existing.getId());
 
-        tasks.delete(existing);
+        existing.setDeleted(true);
+        tasks.save(existing);
         activityLogs.log(null, owner, "TASK_DELETED",
                 owner.getFullName() + " deleted task \"" + title + "\"");
     }

@@ -4,11 +4,15 @@ import { CommonModule } from '@angular/common';
 import { Priority, TaskRequest, TaskResponse, TaskStatus, UserResponse } from '../../models/task.model';
 import { TaskCommentsComponent } from '../task-comments/task-comments.component';
 import { TaskService } from '../../services/task.service';
+import { AuthService } from '../../services/auth.service';
+import { TaskAttachmentsComponent } from '../attachments/task-attachments.component';
+import { SubtasksComponent } from '../subtasks/subtasks.component';
+import { TimeTrackingComponent } from '../time-tracking/time-tracking.component';
 
 @Component({
   standalone: true,
   selector: 'app-task-form',
-  imports: [CommonModule, ReactiveFormsModule, TaskCommentsComponent],
+  imports: [CommonModule, ReactiveFormsModule, TaskCommentsComponent, TaskAttachmentsComponent, SubtasksComponent, TimeTrackingComponent],
   templateUrl: './task-form.component.html',
   styleUrls: ['./task-form.component.css']
 })
@@ -33,6 +37,7 @@ export class TaskFormComponent implements OnInit {
 
   #fb = inject(FormBuilder);
   #taskService = inject(TaskService);
+  #auth = inject(AuthService);
 
   /**
    * Use Non‑Nullable FormBuilder so control values are never null.
@@ -67,6 +72,11 @@ export class TaskFormComponent implements OnInit {
     }
   }
 
+  canMutate(): boolean {
+    const r = this.#auth.getCurrentRole();
+    return r === 'ADMIN' || r === 'MANAGER' || r === 'MEMBER';
+  }
+
   // Converts ISO or Y-M-D to yyyy-MM-dd for <input type="date">
   private toYMD(d: string): string {
     if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
@@ -82,6 +92,7 @@ export class TaskFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (!this.canMutate()) return;
     if (this.loading || this.form.invalid) {
       this.form.markAllAsTouched();
       return;

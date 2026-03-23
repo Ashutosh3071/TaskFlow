@@ -1,0 +1,33 @@
+<div class="attachments">
+  <div class="attachments__head">
+    <h4 class="attachments__title">Attachments</h4>
+    <span class="attachments__hint">Max 5 files · 5 MB each</span>
+  </div>
+
+  <div class="attachments__state" *ngIf="loading">Loading...</div>
+  <div class="attachments__error" *ngIf="error">{{ error }}</div>
+
+  <div class="upload" *ngIf="canUpload(); else readOnly">
+    <div class="upload__row" [class.upload__row--disabled]="list.length >= 5">
+      <input type="file" id="file" (change)="onFilePicked($event)" [disabled]="list.length >= 5 || uploading" />
+      <span class="upload__msg" *ngIf="list.length < 5">Choose a file to upload</span>
+      <span class="upload__msg" *ngIf="list.length >= 5">Maximum 5 files reached.</span>
+      <span class="upload__spinner" *ngIf="uploading">Saving to database...</span>
+    </div>
+  </div>
+  <ng-template #readOnly>
+    <div class="attachments__state">Viewer: download-only</div>
+  </ng-template>
+
+  <div class="list" *ngIf="list.length">
+    <div class="row" *ngFor="let a of list">
+      <div class="row__name">{{ a.originalName }}</div>
+      <div class="row__meta">{{ a.mimeType }} · {{ bytes(a.fileSizeBytes) }} · {{ a.uploadedAt | date:'short' }}</div>
+      <div class="row__actions">
+        <button class="btn btn--secondary" type="button" (click)="download(a)">Download</button>
+        <button class="btn btn--danger" type="button" *ngIf="canDelete(a)" (click)="delete(a)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
